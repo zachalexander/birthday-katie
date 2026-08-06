@@ -160,6 +160,31 @@
       color: #b07050;
       opacity: 0.8;
     }
+
+    /* Cycling messages */
+    .message-area {
+      min-height: 3.5rem;
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .message {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+      color: #7a5540;
+      text-align: center;
+      line-height: 1.5;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      position: absolute;
+    }
+
+    .message.visible {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -192,6 +217,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="message-area">
+      <p class="message" id="cyclingMessage"></p>
     </div>
 
     <p class="footer-note">With all our love ♥</p>
@@ -255,6 +284,59 @@
       const rect = track.getBoundingClientRect();
       const pct = (e.clientX - rect.left) / rect.width;
       audio.currentTime = pct * audio.duration;
+    });
+
+    // Cycling messages
+    const messages = [
+      "Happy Birthday, Mama. Love Noah, Aiden and Dada.",
+      "Thanks for bringing so much light to our life.",
+      "For providing so much warmth and love.",
+      "For the gentle hugs.",
+      "The silly laughter.",
+      "And the guidance you give to us as we live each day.",
+      "We love you to the moon and back."
+    ];
+
+    const msgEl = document.getElementById('cyclingMessage');
+    let msgIndex = 0;
+    let cycleTimer = null;
+    let isCycling = false;
+
+    const FADE = 1500;   // ms — matches CSS transition
+    const HOLD = 5000;   // ms visible
+    const GAP  = 2000;   // ms between messages
+
+    function showMessage(index) {
+      msgEl.textContent = messages[index];
+      msgEl.classList.add('visible');
+
+      cycleTimer = setTimeout(() => {
+        msgEl.classList.remove('visible');
+        cycleTimer = setTimeout(() => {
+          if (!isCycling) return;
+          msgIndex = (index + 1) % messages.length;
+          showMessage(msgIndex);
+        }, FADE);
+      }, HOLD);
+    }
+
+    function startCycling() {
+      if (isCycling) return;
+      isCycling = true;
+      showMessage(msgIndex);
+    }
+
+    function pauseCycling() {
+      isCycling = false;
+      clearTimeout(cycleTimer);
+      msgEl.classList.remove('visible');
+    }
+
+    audio.addEventListener('play', startCycling);
+    audio.addEventListener('pause', pauseCycling);
+    audio.addEventListener('ended', () => {
+      pauseCycling();
+      msgIndex = 0;
     });
   </script>
 </body>
