@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, Mama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fdf6f0;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(255, 200, 170, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(220, 160, 140, 0.18) 0%, transparent 55%);
+      font-family: 'Lato', sans-serif;
+      color: #4a3728;
+      padding: 2rem 1.5rem;
+    }
+
+    .card {
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .ornament {
+      font-size: 1.4rem;
+      color: #c8856a;
+      letter-spacing: 0.5rem;
+      margin-bottom: 2rem;
+      opacity: 0.6;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 8vw, 3rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: #3d2314;
+      margin-bottom: 1rem;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: #a0522d;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: #7a5540;
+      margin-bottom: 3rem;
+      line-height: 1.6;
+    }
+
+    /* Audio Player */
+    .player {
+      background: #fff8f3;
+      border: 1px solid rgba(180, 110, 80, 0.18);
+      border-radius: 16px;
+      padding: 1.8rem 2rem;
+      box-shadow: 0 4px 24px rgba(160, 80, 40, 0.08);
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .play-btn {
+      flex-shrink: 0;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      background: #a0522d;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .play-btn:hover {
+      background: #8b4513;
+    }
+
+    .play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .play-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Shift play icon slightly right for optical centering */
+    .play-btn .icon-play {
+      transform: translateX(2px);
+    }
+
+    .progress-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 4px;
+      background: #e8d5c8;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #a0522d;
+      border-radius: 2px;
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+
+    .time-display {
+      font-size: 0.75rem;
+      font-weight: 300;
+      color: #9a7060;
+      letter-spacing: 0.05em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .footer-note {
+      margin-top: 2.5rem;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #b07050;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ornament">— ✦ —</div>
+
+    <h1>Happy Birthday,<br /><em>Mama</em></h1>
+
+    <p class="subtitle">We made something for you. Press play.</p>
+
+    <div class="player">
+      <audio id="audio" preload="auto">
+        <source src="recording.mp3" type="audio/mpeg" />
+      </audio>
+
+      <div class="player-controls">
+        <button class="play-btn" id="playBtn" aria-label="Play">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+
+        <div class="progress-area">
+          <div class="progress-bar-track" id="track">
+            <div class="progress-bar-fill" id="fill"></div>
+          </div>
+          <div class="time-display">
+            <span id="current">0:00</span>
+            <span id="duration">–:––</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="footer-note">With all our love ♥</p>
+  </div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const fill = document.getElementById('fill');
+    const track = document.getElementById('track');
+    const currentEl = document.getElementById('current');
+    const durationEl = document.getElementById('duration');
+
+    const playIcon = `<svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+    const pauseIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+    function fmt(s) {
+      if (isNaN(s)) return '–:––';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener('play', () => {
+      playBtn.innerHTML = pauseIcon;
+      playBtn.setAttribute('aria-label', 'Pause');
+    });
+
+    audio.addEventListener('pause', () => {
+      playBtn.innerHTML = playIcon;
+      playBtn.setAttribute('aria-label', 'Play');
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.innerHTML = playIcon;
+      fill.style.width = '0%';
+      currentEl.textContent = '0:00';
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      fill.style.width = pct + '%';
+      currentEl.textContent = fmt(audio.currentTime);
+    });
+
+    track.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = track.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = pct * audio.duration;
+    });
+  </script>
+</body>
+</html>
