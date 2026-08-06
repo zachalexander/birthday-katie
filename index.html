@@ -197,7 +197,7 @@
 
     <div class="player">
       <audio id="audio" preload="auto">
-        <source src="recording.mp3" type="audio/mpeg" />
+        <source src="recording.m4a" type="audio/mp4" />
       </audio>
 
       <div class="player-controls">
@@ -223,7 +223,6 @@
       <p class="message" id="cyclingMessage"></p>
     </div>
 
-    <p class="footer-note">With all our love ♥</p>
   </div>
 
   <script>
@@ -314,8 +313,8 @@
         msgEl.classList.remove('visible');
         cycleTimer = setTimeout(() => {
           if (!isCycling) return;
-          msgIndex = (index + 1) % messages.length;
-          showMessage(msgIndex);
+          msgIndex = index + 1;
+          if (msgIndex < messages.length) showMessage(msgIndex);
         }, FADE);
       }, HOLD);
     }
