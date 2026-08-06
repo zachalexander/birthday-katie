@@ -296,7 +296,7 @@
       audio.currentTime = pct * audio.duration;
     });
 
-    // Cycling messages
+    // Cycling messages — evenly spaced across full audio duration
     const messages = [
       "Happy Birthday, Mama. Love Noah, Aiden and Dada.",
       "Thanks for bringing so much light to our life.",
@@ -308,45 +308,36 @@
     ];
 
     const msgEl = document.getElementById('cyclingMessage');
-    let msgIndex = 0;
-    let cycleTimer = null;
-    let isCycling = false;
-
-    const FADE = 1500;   // ms — matches CSS transition
-    const HOLD = 5000;   // ms visible
-    const GAP  = 2000;   // ms between messages
+    const FADE = 1500;
+    let currentSlot = -1;
+    let fadeTimer = null;
 
     function showMessage(index) {
+      clearTimeout(fadeTimer);
       msgEl.textContent = messages[index];
       msgEl.classList.add('visible');
 
-      cycleTimer = setTimeout(() => {
+      const interval = audio.duration / messages.length;
+      const holdTime = Math.max(interval * 0.7 * 1000 - FADE, 2000);
+      fadeTimer = setTimeout(() => {
         msgEl.classList.remove('visible');
-        cycleTimer = setTimeout(() => {
-          if (!isCycling) return;
-          msgIndex = index + 1;
-          if (msgIndex < messages.length) showMessage(msgIndex);
-        }, FADE);
-      }, HOLD);
+      }, holdTime);
     }
 
-    function startCycling() {
-      if (isCycling) return;
-      isCycling = true;
-      showMessage(msgIndex);
-    }
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const interval = audio.duration / messages.length;
+      const slot = Math.floor(audio.currentTime / interval);
+      if (slot !== currentSlot && slot < messages.length) {
+        currentSlot = slot;
+        showMessage(slot);
+      }
+    });
 
-    function pauseCycling() {
-      isCycling = false;
-      clearTimeout(cycleTimer);
-      msgEl.classList.remove('visible');
-    }
-
-    audio.addEventListener('play', startCycling);
-    audio.addEventListener('pause', pauseCycling);
     audio.addEventListener('ended', () => {
-      pauseCycling();
-      msgIndex = 0;
+      currentSlot = -1;
+      clearTimeout(fadeTimer);
+      msgEl.classList.remove('visible');
     });
   </script>
 </body>
